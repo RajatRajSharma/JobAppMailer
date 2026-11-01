@@ -1,0 +1,8 @@
+node_modules
+.env
+.browser-profile
+result.json
+sent.json
+resume/*.pdf
+result2.json
+result*.json

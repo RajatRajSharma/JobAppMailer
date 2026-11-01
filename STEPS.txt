@@ -1,0 +1,222 @@
+=====================================================================
+JOB APP MAILER - COMPLETE STEP-BY-STEP GUIDE
+=====================================================================
+
+WHAT THIS PROJECT DOES
+  1. Updates your Naukri resume headline (adds/removes a "." at the end)
+     so your Naukri profile shows as freshly updated.
+  2. Searches LinkedIn + Naukri + Hacker News for jobs posted in the
+     last 24 hours (NodeJS, JavaScript, React in Pune, Pimpri Chinchwad,
+     Hyderabad) and collects the recruiter / hiring emails.
+  3. Saves all unique emails in result.json.
+  4. (Separate step) Sends your resume to those emails from your Gmail.
+
+
+=====================================================================
+PART A - ONE-TIME INSTALLS (skip anything you already have)
+=====================================================================
+A1. Google Chrome
+    Download and install: https://www.google.com/chrome
+    (The script uses real Chrome, not Edge.)
+
+A2. Node.js (version 18 or newer, "LTS" is fine)
+    Download and install: https://nodejs.org
+    After install, OPEN A NEW terminal and check:
+        node -v
+        npm -v
+    Both must print a version number.
+
+A3. VS Code (the editor, to edit the config files)
+    Download and install: https://code.visualstudio.com
+    Open the project: File > Open Folder > d:\personalProject\JobAppMailer
+    Open the terminal inside it: Terminal > New Terminal
+    (All commands below are typed in this terminal.)
+
+A4. Project packages (run once, inside the project folder)
+        npm install
+        npm run setup
+
+
+=====================================================================
+PART B - WHAT YOU MUST EDIT / ADD (one time, then only when needed)
+=====================================================================
+B1. YOUR RESUME FILE
+    Folder: resume\
+    Keep your PDF there. Current expected file:
+        resume\Rajat_Raj_Sharma_Resume_FullStack.docx.pdf
+    If you rename it, also change "resumePath" in config\email.config.js.
+
+B2. config\email.config.js   (what the email looks like)
+    - from / fromName ........ your Gmail and name
+    - subject ................ the subject line
+    - body ................... the mail text. IMPORTANT: replace the
+                               placeholders in [ square brackets ], e.g.
+                               "[X years]" and "[type of products]",
+                               with real facts before you send.
+    - resumePath ............. path of your resume PDF
+    - attachmentBaseName ..... name the recruiter sees. The date is added
+                               automatically:
+                               Rajat_Raj_Sharma_FullStack_DD_MM.pdf
+    - maxPerRun .............. max mails per run (default 40)
+    - delaySecondsMin/Max .... random wait between mails (30-90 sec)
+
+B3. config\search.config.js   (what to search)
+    - hoursBack .............. 24 = jobs posted in the last 24 hours
+    - maxJobsPerSearch ....... how many jobs to open per search (100)
+    - keywords ............... skills + all their spellings (variants)
+    - locations .............. Pune, Pimpri Chinchwad, Hyderabad
+    - naukri.refreshProfile .. true = update Naukri headline first
+                               false = skip that step
+    - naukri.enabled ......... true/false for Naukri job search
+    - linkedin.jobs / posts .. true/false for each LinkedIn search
+    - hackerNews.enabled ..... true/false
+
+B4. .env   (ONLY needed for sending mails, Part E)
+    See Part E, step E1-E3.
+
+
+=====================================================================
+PART C - FIRST: LOG IN TO GOOGLE (IMPORTANT)
+=====================================================================
+You sign in to LinkedIn and Naukri with Google. Google does not allow
+login inside automated browsers, so we use a normal Chrome window that
+the script then connects to. Do this every time before collecting:
+
+C1. In the terminal run:
+        npm run chrome
+    A new Chrome window opens (its own profile, separate from your
+    normal Chrome). Keep it open the whole time.
+
+C2. In THAT window, log in to Google first:
+        https://accounts.google.com
+    Use the Google account you use for LinkedIn and Naukri.
+    (Forgot the password? Click "Forgot password" and use the code sent
+    to your recovery email.)
+
+C3. In the same window, log in to LinkedIn:
+        https://www.linkedin.com/login  > "Sign in with Google"
+    Stop when you can see your LinkedIn feed.
+
+C4. In the same window, log in to Naukri:
+        https://www.naukri.com  > Login > "Sign in with Google"
+    Stop when you can see your Naukri homepage.
+
+You only do C2-C4 the first time. The logins are remembered in the
+folder .browser-profile, so next time just run "npm run chrome" and
+check you are still logged in.
+
+Do NOT close this Chrome window or its tabs until the run says "Done".
+
+
+=====================================================================
+PART D - GET THE EMAILS
+=====================================================================
+D1. With the Chrome window from Part C still open, run in the terminal:
+        npm run collect
+
+D2. What happens, in this order (watch the terminal messages):
+    1. NAUKRI PROFILE UPDATE
+       - It adds or removes the "." at the end of your resume headline
+         and saves.
+       - Terminal shows:  "Dot ADDED ..." or "Dot REMOVED ..."
+       - Terminal shows:  "Last updated before: <date time>"
+                          "Last updated now:    <date time>"
+         (taken from Naukri's dashboard mod_dt)
+    2. LINKEDIN: jobs + "we are hiring" posts for each skill and each
+       city, last 24 hours.
+    3. NAUKRI JOB SEARCH: it pauses and asks you to log in to Naukri
+       (you already did in Part C) -> just press ENTER in the terminal.
+    4. HACKER NEWS "Who is hiring" thread.
+
+D3. Wait. Do not touch or close the Chrome window. The full run can take
+    about an hour. result.json is saved after every step, so nothing is
+    lost if it stops.
+
+D4. When you see:   Done. N unique emails saved to result.json
+    open result.json and review it. Delete useless addresses (info@,
+    support@, noreply@) if you want.
+
+result.json layout:
+    generatedAt / generatedAtLocal ... date and time of the run
+    hoursBack ........................ the 24-hour setting used
+    nodejs / javascript / react ...... one list per skill
+    hackerNews ....................... list from Hacker News
+    totalUnique ...................... total, no email repeats
+
+Run it at most once a day.
+
+To update ONLY the Naukri headline (no searching):
+        npm run refresh
+
+
+=====================================================================
+PART E - SEND THE EMAILS (needs a Gmail App Password)
+=====================================================================
+E1. Turn on 2-Step Verification for your Gmail:
+        https://myaccount.google.com/security
+
+E2. Create an App Password (a 16-letter code, NOT your normal password):
+        https://myaccount.google.com/apppasswords
+    Name it "JobMailer" and copy the 16 letters.
+
+E3. Create the .env file:
+        copy .env.example .env
+    Open .env in VS Code and fill it:
+        GMAIL_USER=sharmarajatraj1@gmail.com
+        GMAIL_APP_PASSWORD=paste16letterswithoutspaces
+    Save.
+
+E4. Make sure config\email.config.js has your final subject and body
+    (no [square bracket] placeholders left) - see B2.
+
+E5. Preview first (sends NOTHING, only lists who would get a mail and
+    the attachment name):
+        npm run send:dry
+
+E6. If it looks right, send for real:
+        npm run send
+    - Max 40 mails per run, random 30-90 sec gap between mails.
+    - Each sent address is stored in sent.json, so nobody gets two mails.
+    - Run again later (e.g. next day) to send the next batch.
+
+
+=====================================================================
+DAILY ROUTINE (after the first-time setup)
+=====================================================================
+    1. npm run chrome            (check Google/LinkedIn/Naukri logged in)
+    2. npm run collect           (wait until "Done")
+    3. check result.json
+    4. npm run send:dry
+    5. npm run send
+
+
+=====================================================================
+IF SOMETHING GOES WRONG
+=====================================================================
+"Cannot reach Chrome on port 9222"
+    -> Run "npm run chrome" first and keep that window open.
+
+"Target page, context or browser has been closed"
+    -> You closed the Chrome window/tab during the run. Start again.
+
+Naukri step says "Could not update" or a timeout
+    -> Make sure you are logged in to Naukri in that Chrome window.
+       Copy the terminal message and send it to Claude.
+
+LinkedIn gives 0 emails for jobs
+    -> Normal sometimes; most job posts hide emails. Posts and Hacker News
+       usually still give some. If always 0, LinkedIn may have changed
+       its page: tell Claude.
+
+"result.json not found"           -> run "npm run collect" first.
+"Resume not found"                -> check the file in resume\ and the
+                                     resumePath in email.config.js.
+"Set GMAIL_APP_PASSWORD in .env"  -> finish Part E1-E3.
+Gmail login error when sending    -> use the 16-letter App Password,
+                                     not your normal Google password.
+
+NOTES
+  - LinkedIn and Naukri do not officially allow automation. Your account
+    could get a warning. Keep runs to once a day and do not raise the
+    limits much.
+  - Naukri page layout can change; if its steps stop working, tell Claude.

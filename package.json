@@ -1,0 +1,18 @@
+{
+  "name": "job-app-mailer",
+  "version": "1.0.0",
+  "description": "Collect recruiter emails from job posts and send them your resume",
+  "scripts": {
+    "setup": "playwright install chromium",
+    "chrome": "node src/openChrome.js",
+    "refresh": "node src/refreshNaukri.js",
+    "collect": "node src/getEmails.js",
+    "send": "node src/sendEmails.js",
+    "send:dry": "node src/sendEmails.js --dry"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.9.14",
+    "playwright": "^1.47.0"
+  }
+}
